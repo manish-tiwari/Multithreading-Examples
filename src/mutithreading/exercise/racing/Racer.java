@@ -1,38 +1,82 @@
 package mutithreading.exercise.racing;
 
-public class Racer implements Runnable{
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Racer implements Runnable {
 
 	public static String winner;
-	private boolean isRaceWon;
-	
+
+	static Map<String, Integer> threadAndDistance = new HashMap<String, Integer>();
+	static Map<String, Long> threadAndStartingTime=new HashMap<String,Long>();
+	static Map<String, Long> threadAndEndingTime=new HashMap<String,Long>();
+	static final int totalDistance=100;
+
 	public void race() {
 
-		// TODO Auto-generated method stub
-		for(int distance=1;distance<=100;distance++){
-			System.out.println("Distance covered by "+Thread.currentThread().getName()+" is "+distance);
-			isRaceWon=checkIsRaceOver(distance);
-			if (isRaceWon) {
-				System.out.println("Winner is "+winner);
-				break;
-			}
-			
+		for (int distance = 1; distance <= totalDistance; distance++) {
+//			if (winner != null) {
+//				break;
+//			}
+			checkStatus(distance);
+//			if (winner != null) {
+//				break;
+//			}
 		}
-	
+
 	}
-	
+
+	private static int cnt = 0;
+
+	private synchronized void checkStatus(int distance) {
+		String racerName=Thread.currentThread().getName();
+		try {
+			Thread.currentThread().sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		isRaceWon(racerName);
+		System.out.println("Distance covered by " + racerName + " is " + threadAndDistance.get(racerName));
+		if (cnt == 0) {
+			if (winner != null) {
+				System.out.println("Winner is " + winner);
+				cnt++;
+			}
+		}
+		if (threadAndDistance.get(racerName)==100 && threadAndEndingTime.get(racerName)!=null) {
+			long timeTaken=threadAndEndingTime.get(racerName)-threadAndStartingTime.get(racerName);
+			System.out.println("Time taken by "+racerName+" to complete the race is "+timeTaken + " milliseconds");
+		}
+	}
+
 	@Override
 	public void run() {
+		System.out.println("Thread:" + Thread.currentThread().getName());
+		threadAndDistance.put(Thread.currentThread().getName(), new Integer(1));
+		threadAndStartingTime.put(Thread.currentThread().getName(), Calendar.getInstance().getTimeInMillis());
 		this.race();
 	}
-	private boolean checkIsRaceOver(int totalDistanceCovered) {
-		if (!isRaceWon && totalDistanceCovered==100) {
-			winner=Thread.currentThread().getName();
-			return true;
-		} else if(!isRaceWon && totalDistanceCovered<100){
-			winner=null;
-			return false;
+
+	private void isRaceWon(String racerName) {
+		if (winner != null) {
+			return;
 		}
-		return isRaceWon;
+		if (threadAndDistance.get(racerName) >= totalDistance) {
+			
+			if (cnt==0) {
+				winner = racerName;
+			}
+		} else {
+			threadAndDistance.put(racerName,
+					threadAndDistance.get(racerName) + 1);
+			if (threadAndDistance.get(racerName)==totalDistance) {
+				threadAndEndingTime.put(racerName, Calendar.getInstance().getTimeInMillis());
+			}
+		}
 	}
 
 }
