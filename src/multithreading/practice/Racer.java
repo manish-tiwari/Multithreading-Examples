@@ -12,7 +12,6 @@ public class Racer implements Runnable {
 
 	public void race() {
 
-		// TODO Auto-generated method stub
 		for (int distance = 1; distance <= 1000; distance++) {
 			if (winner != null) {
 				break;
